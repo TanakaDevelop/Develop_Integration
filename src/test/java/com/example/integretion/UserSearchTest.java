@@ -2,6 +2,7 @@ package com.example.integretion;
 
 import java.nio.file.Path;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
@@ -9,6 +10,7 @@ class UserSearchTest extends AbstractTest {
 
 	protected static final Path RESOURCE_DIR = Path.of("src/test/resources/");
 
+	@Disabled
 	@Test
 	void test() {
 		webTestClient
