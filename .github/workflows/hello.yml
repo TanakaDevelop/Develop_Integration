@@ -1,15 +1,12 @@
-name: Manual
-on:
-  workflow_dispatch:
-    inputs:
-      greeting:
-        type: string
-        default: Hello
-        required: true
-        description: A cheerful word
-
+name: Environment variables
+on: push
 jobs:
-  hello:
+  run:
     runs-on: ubuntu-latest
+    env:
+      BRANCH: main                # ジョブレベルで環境変数を定義
     steps:
-      - run: echo "${{ inputs.greeting }}"
+      - run: echo "${BRANCH}"     # シェルコマンドからジョブレベルの環境変数を参照
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.BRANCH }}  # envコンテキスト経由でジョブレベルの環境変数を参照
