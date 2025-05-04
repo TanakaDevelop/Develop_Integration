@@ -1,0 +1,10 @@
+aws:
+  dynamodb:
+    endpoint: http://127.0.0.1:59748
+    accessKey: test
+    secretKey: test
+
+logging:
+  level:
+    root: INFO
+
