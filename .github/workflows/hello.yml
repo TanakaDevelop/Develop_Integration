@@ -1,12 +1,12 @@
-name: Environment variables
+name: Compare functions
 on: push
 jobs:
-  run:
+  compare:
     runs-on: ubuntu-latest
-    env:
-      BRANCH: main                # ジョブレベルで環境変数を定義
     steps:
-      - run: echo "${BRANCH}"     # シェルコマンドからジョブレベルの環境変数を参照
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ env.BRANCH }}  # envコンテキスト経由でジョブレベルの環境変数を参照
+      - run: printenv | grep '_FUNC'
+        env:
+          CONTAINS_FUNC: ${{ contains('Hello', 'ell') }}     # 「ell」を含むか
+          STARTS_WITH_FUNC: ${{ startsWith('Hello', 'He') }} # 「He」で始まるか
+          ENDS_WITH_FUNC: ${{ endsWith('Hello', 'lo') }}     # 「lo」で終わるか
+          
