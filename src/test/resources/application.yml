@@ -3,7 +3,6 @@ aws:
     endpoint: http://127.0.0.1:59748
     accessKey: test
     secretKey: test
-    enable: true
 
 logging:
   level:
