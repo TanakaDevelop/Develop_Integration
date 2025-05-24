@@ -1,11 +1,13 @@
 aws:
   dynamodb:
-    endpoint: http://127.0.0.1:8000
+    endpoint: http://localhost:8000
     accessKey: test
     secretKey: test
-    enable: true
+    local: true
 
 logging:
   level:
     root: INFO
+
+
 

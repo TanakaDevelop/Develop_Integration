@@ -1,27 +1,36 @@
 package com.example.integretion;
 
+import java.io.IOException;
 import java.nio.file.Path;
+import java.time.Duration;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 
 class UserSearchTest extends AbstractTest {
 
-	protected static final Path RESOURCE_DIR = Path.of("src/test/resources/");
+	protected static final Path REQUEST_DIR = Path.of("jsonData/request/");
+	protected static final Path RESPONSE_DIR = Path.of("jsonData/response/");
 
-	@Disabled
 	@Test
-	void test() {
+	void test1() throws IOException {
+
+		String requestData = readFile(REQUEST_DIR + "/test1.json");
+		String responseData = readFile(RESPONSE_DIR + "/test1.json");
+
+		webTestClient = webTestClient.mutate()
+				.responseTimeout(Duration.ofSeconds(50))
+				.build();
+
 		webTestClient
 				.post()
 				.uri("/api/user/search")
 				.contentType(MediaType.APPLICATION_JSON)
-				.bodyValue("{\"id\":\"12345\"}")
+				.bodyValue(requestData)
 				.exchange()
-				.expectStatus().isOk()
-				.expectBody(String.class)
-				.isEqualTo("Hello, World!");
+				.expectStatus().isEqualTo(HttpStatus.OK)//
+				.expectBody().json(responseData);//
 	}
 
 }

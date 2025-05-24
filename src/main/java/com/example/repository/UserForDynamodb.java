@@ -68,6 +68,7 @@ public class UserForDynamodb {
 				// 取得値
 				UserEntity userEntity = new UserEntity();
 				userEntity.setId(rec.getOrDefault("id", defaultValue).s());
+				userEntity.setName(rec.getOrDefault("name", defaultValue).s());
 				entityList.add(userEntity);
 			}
 			// ページング結果が最終である場合はブレイクする

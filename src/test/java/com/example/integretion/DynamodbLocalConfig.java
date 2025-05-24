@@ -2,6 +2,7 @@ package com.example.integretion;
 
 import java.net.URI;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -11,6 +12,7 @@ import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 
+@ConditionalOnProperty(value = "aws.dynamodb.local", havingValue = "true", matchIfMissing = false)
 @Configuration
 public class DynamodbLocalConfig {
 

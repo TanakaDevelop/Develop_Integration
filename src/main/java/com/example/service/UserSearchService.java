@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.entity.UserEntity;
 import com.example.repository.UserForDynamodb;
+import com.example.response.UserResponse;
 
 import lombok.RequiredArgsConstructor;
 
@@ -21,9 +22,11 @@ public class UserSearchService {
 	 * @param id ユーザーID
 	 * @return ユーザー情報
 	 */
-	public List<UserEntity> searchUser(String id) {
+	public UserResponse searchUser(String id) {
 		// ユーザー検索
-		return userForDynamodb.query(id);
+		List<UserEntity> userList = userForDynamodb.query(id);
+
+		return UserResponse.from(userList.get(0));
 	}
 
 }

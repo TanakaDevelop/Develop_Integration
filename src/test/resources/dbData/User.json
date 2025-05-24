@@ -1,27 +1,10 @@
-{
-  "TableName": "UserEntity",
-  "AttributeDefinitions": [
-    {
-      "AttributeName": "id",
-      "AttributeType": "S"
-    },
-    {
-      "AttributeName": "Name",
-      "AttributeType": "S"
-    }
-  ],
-  "KeySchema": [
-    {
-      "AttributeName": "id",
-      "KeyType": "HASH"
-    },
-    {
-      "AttributeName": "Name",
-      "KeyType": "RANGE"
-    }
-  ],
-  "ProvisionedThroughput": {
-    "ReadCapacityUnits": 5,
-    "WriteCapacityUnits": 5
-  }
-}
+[
+	{
+		"id": "test1",
+		"name": "John1"
+	},
+	{
+		"id": "test2",
+		"name": "John2"
+	}
+]

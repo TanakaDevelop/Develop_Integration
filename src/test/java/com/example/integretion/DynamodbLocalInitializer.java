@@ -1,27 +1,25 @@
 package com.example.integretion;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.InputStream;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ResourceLoader;
 
 import com.example.entity.UserEntity;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import software.amazon.awssdk.core.waiters.WaiterResponse;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
+import software.amazon.awssdk.enhanced.dynamodb.model.PutItemEnhancedRequest;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
-import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.DescribeTableRequest;
 import software.amazon.awssdk.services.dynamodb.model.DescribeTableResponse;
-import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
 import software.amazon.awssdk.services.dynamodb.waiters.DynamoDbWaiter;
 
 /**
@@ -29,7 +27,7 @@ import software.amazon.awssdk.services.dynamodb.waiters.DynamoDbWaiter;
  */
 public class DynamodbLocalInitializer {
 
-	protected static final Path RESOURCE_DIR = Path.of("src/test/resources/");
+	protected static final String TEST_DATA_FILE_PATH = "classpath:dbData/%s.json";
 
 	@Autowired
 	private DynamoDbClient dynamoDbClient;
@@ -37,9 +35,15 @@ public class DynamodbLocalInitializer {
 	@Autowired
 	private DynamoDbEnhancedClient dynamoDbEnhancedClient;
 
+	@Autowired
+	private ResourceLoader resourceLoader;
+
+	@Autowired
+	private ObjectMapper objectMapper;
+
 	@Getter
 	private enum Master {
-		USER(UserEntity.class, "user");
+		USER(UserEntity.class, "User");
 
 		private final Class<?> beanClass;
 
@@ -51,6 +55,7 @@ public class DynamodbLocalInitializer {
 		}
 	}
 
+	@PostConstruct
 	public <T> void setup() throws IOException {
 		for (Master master : Master.values()) {
 			final boolean isTableExists = dynamoDbClient.listTables().tableNames().contains(master.getTableName());
@@ -82,43 +87,31 @@ public class DynamodbLocalInitializer {
 
 	private <T> void inserData(Master master) throws IOException {
 
-		String dbPath = "classpath:src/test/resources/dbData/" + master.getTableName() + ".json";
+		// テーブル名取得
+		String tableName = master.getTableName();
 
-		String jsonData = readFile(dbPath);
-
-		// JSON文字列をMapに変換
-		ObjectMapper mapper = new ObjectMapper();
-		Map<String, Object> jsonMap = mapper.readValue(jsonData, new TypeReference<>() {
-		});
-
-		// Map<String, AttributeValue> へ変換
-		Map<String, AttributeValue> item = new HashMap<>();
-		for (Map.Entry<String, Object> entry : jsonMap.entrySet()) {
-			Object value = entry.getValue();
-			AttributeValue attributeValue;
-
-			if (value instanceof Number) {
-				attributeValue = AttributeValue.builder().n(value.toString()).build();
-			} else {
-				attributeValue = AttributeValue.builder().s(value.toString()).build();
-			}
-
-			item.put(entry.getKey(), attributeValue);
+		@SuppressWarnings("unchecked")
+		final Class<T> entityClass = (Class<T>) master.getBeanClass();
+		// テストデータ読み込み
+		final String dataFilePath = String.format(TEST_DATA_FILE_PATH, tableName);
+		final List<T> items = loadDataFromJson(dataFilePath, entityClass);
+		// データ投入
+		final DynamoDbTable<T> table = dynamoDbEnhancedClient.table(tableName,
+				TableSchema.fromBean(entityClass));
+		for (T item : items) {
+			PutItemEnhancedRequest<T> putItemEnhancedRequest = PutItemEnhancedRequest.builder(entityClass)
+					.item(item).build();
+			table.putItem(putItemEnhancedRequest);
 		}
-
-		// PutItem実行
-		PutItemRequest request = PutItemRequest.builder()
-				.tableName(master.getTableName())
-				.item(item)
-				.build();
-
-		dynamoDbClient.putItem(request);
-
 	}
 
-	private String readFile(String fileName) throws IOException {
-		Path target = Path.of(fileName);
-		return Files.readString(target);
+	private <T> List<T> loadDataFromJson(String filePath, Class<T> entityClass) throws IOException {
+		try (InputStream inputStream = resourceLoader.getResource(filePath).getInputStream()) {
+			return objectMapper.readValue(inputStream, objectMapper.getTypeFactory()
+					.constructCollectionType(List.class, entityClass));
+		} catch (IOException e) {
+			throw new RuntimeException("Failed to load data from JSON file: " + filePath, e);
+		}
 	}
 
 }

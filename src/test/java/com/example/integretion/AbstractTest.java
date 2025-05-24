@@ -11,6 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
@@ -20,7 +21,7 @@ import com.example.DevelopIntegretionApplication;
 @AutoConfigureWebTestClient
 @ContextConfiguration(classes = { DevelopIntegretionApplication.class, DynamodbLocalConfig.class,
 		AbstractTest.TestConfig.class })
-
+@ActiveProfiles("integration")
 public abstract class AbstractTest {
 
 	protected static final Path RESOURCE_DIR = Path.of("src/test/resources/");
